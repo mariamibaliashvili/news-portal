@@ -18,15 +18,23 @@ function Home({ t, setArticles, addToFavorites }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    axios
-      .get('https://newsapi.org/v2/top-headlines?country=us&apiKey=6426f22f97284b06b93c0c0c742813d3')
-      .then(res => {
-        setData(res.data.articles);
-        setArticles(res.data.articles);
-      })
-      .catch(err => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [setArticles]);
+  const fetchArticles = async () => {
+    try {
+      const res = await axios.get(
+        'https://newsapi.org/v2/top-headlines?country=us&apiKey=6426f22f97284b06b93c0c0c742813d3'
+      );
+      setData(res.data.articles);
+      setArticles(res.data.articles);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchArticles();
+}, []);
+
 
   if (loading) return <p>{t.loading}</p>;
   if (error) return <p>{t.error || `შეცდომა: ${error}`}</p>;
