@@ -1,5 +1,3 @@
-import React from 'react';
-
 function About({ t }) {
   return (
     <div className="container">

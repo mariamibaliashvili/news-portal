@@ -1,6 +1,3 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-
 function Favorites({ favorites, t }) {
   if (favorites.length === 0) return <p>{t.noFavorites}</p>;
 
