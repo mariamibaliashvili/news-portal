@@ -20,7 +20,7 @@ function Home({ t, setArticles, addToFavorites, favorites }) {
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        const res = await axios.get('http://localhost:3001/api/news');
+        const res = await axios.get('https://news-portal-gih8.onrender.com/api/news');
         setData(res.data.articles);
         setArticles(res.data.articles);
       } catch (err) {
