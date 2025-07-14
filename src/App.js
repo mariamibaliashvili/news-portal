@@ -12,16 +12,14 @@ import Favorites from './Favorites';
 import About from './About';
 import './App.scss';
 
-function Home({ t, setArticles, addToFavorites, favorites }) {
-  const [data, setData] = useState([]);
+function Home({ t, articles, setArticles, addToFavorites, favorites }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        const res = await axios.get('https://news-portal-gih8.onrender.com/api/news');
-        setData(res.data.articles);
+        const res = await axios.get('https://news-proxy-ym7r.onrender.com/api/news');
         setArticles(res.data.articles);
       } catch (err) {
         setError(err.message);
@@ -40,7 +38,7 @@ function Home({ t, setArticles, addToFavorites, favorites }) {
     <div className="container">
       <h1>{t.newsTitle}</h1>
       <div className="grid">
-        {data.map((post, index) => {
+        {articles.map((post, index) => {
           const isSaved = favorites.some(a => a.title === post.title);
           return (
             <div key={index} className="card">
@@ -164,13 +162,13 @@ function App() {
           </div>
         </header>
 
-
         <Routes>
           <Route
             path="/"
             element={
               <Home
                 t={t}
+                articles={articles}
                 setArticles={setArticles}
                 addToFavorites={addToFavorites}
                 favorites={favorites}
