@@ -20,9 +20,7 @@ function Home({ t, setArticles, addToFavorites, favorites }) {
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        const res = await axios.get(
-          'https://newsapi.org/v2/top-headlines?country=us&apiKey=6426f22f97284b06b93c0c0c742813d3'
-        );
+        const res = await axios.get('http://localhost:3001/api/news');
         setData(res.data.articles);
         setArticles(res.data.articles);
       } catch (err) {
