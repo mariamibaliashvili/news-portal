@@ -12,29 +12,28 @@ import Favorites from './Favorites';
 import About from './About';
 import './App.scss';
 
-function Home({ t, setArticles, addToFavorites }) {
+function Home({ t, setArticles, addToFavorites, favorites }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-  const fetchArticles = async () => {
-    try {
-      const res = await axios.get(
-        'https://newsapi.org/v2/top-headlines?country=us&apiKey=6426f22f97284b06b93c0c0c742813d3'
-      );
-      setData(res.data.articles);
-      setArticles(res.data.articles);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const fetchArticles = async () => {
+      try {
+        const res = await axios.get(
+          'https://newsapi.org/v2/top-headlines?country=us&apiKey=6426f22f97284b06b93c0c0c742813d3'
+        );
+        setData(res.data.articles);
+        setArticles(res.data.articles);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchArticles();
-}, []);
-
+    fetchArticles();
+  }, [setArticles]);
 
   if (loading) return <p>{t.loading}</p>;
   if (error) return <p>{t.error || `შეცდომა: ${error}`}</p>;
@@ -43,21 +42,26 @@ function Home({ t, setArticles, addToFavorites }) {
     <div className="container">
       <h1>{t.newsTitle}</h1>
       <div className="grid">
-        {data.map((post, index) => (
-          <div key={index} className="card">
-            <img src={post.urlToImage || 'https://via.placeholder.com/400x200'} alt="news" />
-            <div className="card-body">
-              <h3>{post.title}</h3>
-              <p>{post.description?.substring(0, 100)}...</p>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <Link to={`/article/${index}`}>
-                  <button>{t.readMore}</button>
-                </Link>
-                <button onClick={() => addToFavorites(post)}>{t.save}</button>
+        {data.map((post, index) => {
+          const isSaved = favorites.some(a => a.title === post.title);
+          return (
+            <div key={index} className="card">
+              <img src={post.urlToImage || 'https://via.placeholder.com/400x200'} alt="news" />
+              <div className="card-body">
+                <h3>{post.title}</h3>
+                <p>{post.description?.substring(0, 100)}...</p>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <Link to={`/article/${index}`}>
+                    <button>{t.readMore}</button>
+                  </Link>
+                  {!isSaved && (
+                    <button onClick={() => addToFavorites(post)}>{t.save}</button>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -72,7 +76,11 @@ function Article({ t, articles }) {
   return (
     <div className="container">
       <h2>{article.title}</h2>
-      <img src={article.urlToImage || 'https://via.placeholder.com/800x400'} alt="article" style={{ width: '100%', borderRadius: '12px' }} />
+      <img
+        src={article.urlToImage || 'https://via.placeholder.com/800x400'}
+        alt="article"
+        style={{ width: '100%', borderRadius: '12px' }}
+      />
       <p>{article.content || article.description}</p>
       <a href={article.url} target="_blank" rel="noopener noreferrer">
         <button>{t.openSource}</button>
@@ -88,6 +96,11 @@ function App() {
   const [language, setLanguage] = useState('ka');
   const [articles, setArticles] = useState([]);
   const [favorites, setFavorites] = useLocalStorage('favorites', []);
+  const [theme, setTheme] = useState('light');
+
+  const toggleTheme = () => {
+    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
+  };
 
   const translations = {
     ka: {
@@ -100,7 +113,7 @@ function App() {
       save: 'შენახვა',
       noFavorites: 'ფავორიტები ჯერ არ გაქვთ შენახული.',
       aboutTitle: 'ჩვენს შესახებ',
-      aboutText: 'ეს არის ნიუს პორტალი სადაც გაეცნობთ უახლეს ამბებს.'
+      aboutText: 'ეს არის ნიუს პორტალი სადაც გაეცნობით უახლეს ამბებს.'
     },
     en: {
       newsTitle: 'News',
@@ -119,38 +132,59 @@ function App() {
   const t = translations[language];
 
   const addToFavorites = (article) => {
-  if (!favorites.some(a => a.title === article.title)) {
-    setFavorites([...favorites, article]);
-  }
-};
-
-
+    if (!favorites.some(a => a.title === article.title)) {
+      setFavorites([...favorites, article]);
+    }
+  };
 
   return (
-    <Router>
-      <header className="app-header">
-        <h1>News Portal</h1>
-        <div className="nav-buttons">
-          <Link to="/">Home</Link>
-          <Link to="/favorites">{t.favoritesTitle}</Link>
-          <Link to="/about">About</Link>
-          <button
-            onClick={() => setLanguage('ka')}
-            className={language === 'ka' ? 'lang-btn active' : 'lang-btn'}>ქარ</button>
-          <button
-            onClick={() => setLanguage('en')}
-            className={language === 'en' ? 'lang-btn active' : 'lang-btn'}>Eng</button>
+    <div className={`app ${theme}`}>
+      <Router>
+        <header className="app-header">
+          <h1>News Portal</h1>
+          <div className="nav-buttons">
+            <Link to="/">Home</Link>
+            <Link to="/favorites">{t.favoritesTitle}</Link>
+            <Link to="/about">About</Link>
 
-        </div>
-      </header>
+            <button
+              onClick={() => setLanguage('ka')}
+              className={language === 'ka' ? 'lang-btn active' : 'lang-btn'}
+            >
+              ქარ
+            </button>
+            <button
+              onClick={() => setLanguage('en')}
+              className={language === 'en' ? 'lang-btn active' : 'lang-btn'}
+            >
+              Eng
+            </button>
 
-      <Routes>
-        <Route path="/" element={<Home t={t} setArticles={setArticles} addToFavorites={addToFavorites} />} />
-        <Route path="/article/:id" element={<Article t={t} articles={articles} />} />
-        <Route path="/favorites" element={<Favorites favorites={favorites} t={t} />} />
-        <Route path="/about" element={<About t={t} />} />
-      </Routes>
-    </Router>
+            <button onClick={toggleTheme} className="theme-toggle">
+              {theme === 'light' ? '🌙' : '☀️'}
+            </button>
+          </div>
+        </header>
+
+
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <Home
+                t={t}
+                setArticles={setArticles}
+                addToFavorites={addToFavorites}
+                favorites={favorites}
+              />
+            }
+          />
+          <Route path="/article/:id" element={<Article t={t} articles={articles} />} />
+          <Route path="/favorites" element={<Favorites favorites={favorites} t={t} />} />
+          <Route path="/about" element={<About t={t} />} />
+        </Routes>
+      </Router>
+    </div>
   );
 }
 
